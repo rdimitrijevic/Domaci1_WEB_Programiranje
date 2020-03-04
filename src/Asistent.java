@@ -4,24 +4,35 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Asistent implements Runnable {
 
-    private Semaphore finishedLock;
+    private Semaphore finishedSem;
     private ReentrantLock isReadyLock;
-    private Semaphore beginSemaphore;
+    private Semaphore beginSem;
+
+    private short busy = 0;
 
     private Student student = null;
+    private final String ime = "Asistent";
 
     @Override
     public void run() {
 
         while( true ) {
             try {
-                beginSemaphore.acquire();
+                beginSem.acquire();
 
-                wait(student.getTrajanjeOdbrane());
+                for(int i = 0; i < student.getTrajanjeOdbrane(); i++);
                 Random rand = new Random();
-                student.setOcena(rand.nextInt(11));
 
-                finishedLock.release();
+                int ocena = rand.nextInt(11);
+                student.setOcena(ocena);
+                student.setImeIspitivaca(ime);
+
+                Main.gradeSum += ocena;
+                Main.numberOfStudents++;
+
+                busy = 0;
+
+                finishedSem.release();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -29,17 +40,17 @@ public class Asistent implements Runnable {
     }
 
     public Asistent() {
-        finishedLock = new Semaphore(0);
-        beginSemaphore = new Semaphore(0);
+        finishedSem = new Semaphore(0);
+        beginSem = new Semaphore(0);
         isReadyLock = new ReentrantLock();
     }
 
     public Semaphore getBeginSemaphore() {
-        return beginSemaphore;
+        return beginSem;
     }
 
     public Semaphore getFinishedLock() {
-        return finishedLock;
+        return finishedSem;
     }
 
     public ReentrantLock getIsReadyLock() {
@@ -47,10 +58,15 @@ public class Asistent implements Runnable {
     }
 
     public synchronized void setStudent(Student student) {
+        busy = 1;
         this.student = student;
     }
 
-//    public synchronized int oceniMe(Student student) {
+    public short getBusy() {
+        return busy;
+    }
+
+    //    public synchronized int oceniMe(Student student) {
 //        try {
 //            wait(student.getTrajanjeOdbrane());
 //            Random random = new Random();
