@@ -5,7 +5,8 @@ public class Main {
     public static long numberOfStudents = 0;
     public static double averageGrade = 0.0;
 
-    public static void main(String[] args) {
-
+    public static void main(String[] args) throws InterruptedException {
+        Asistent asistent = new Asistent();
+        asistent.wait();
     }
 }

@@ -25,12 +25,12 @@ public class Student implements Runnable {
 
     @Override
     public void run() {
-        while(true){
-            if( !profesor.getBarrier().isBroken() ) {
+        while (true) {
+            if (!profesor.getBarrier().isBroken()) {
                 try {
                     profesor.getBarrier().await();
 
-                    vremePocetka = (int) (Main.startTime - System.currentTimeMillis());
+                    vremePocetka = (int) (System.currentTimeMillis() - Main.startTime);
                     profesor.setStudent(this);
 
                     profesor.getFinishedSem().acquire();
@@ -44,12 +44,13 @@ public class Student implements Runnable {
                 }
 
                 return;
-            } else if( asistent.getIsReadyLock().tryLock() ) {
+            } else if (asistent.getIsReadyLock().tryLock()) {
                 asistent.setStudent(this);
-                vremePocetka = (int) (Main.startTime - System.currentTimeMillis());
+                vremePocetka = (int) (System.currentTimeMillis() - Main.startTime);
                 asistent.getBeginSemaphore().release();
                 try {
-                    asistent.getFinishedLock().acquire();
+                    asistent.wait();
+//                    asistent.getFinishedLock().acquire();
 
 //                  Nakon sto semafor signalizira da je
 //                  asistent nit zavrsila ocenjivanje
@@ -105,7 +106,7 @@ public class Student implements Runnable {
 
     private String printMe() {
         return "ImeTreda: " + ime + " , Arrival: " + (Main.startTime - vremePrispeca) + ", Prof: " + imeIspitivaca
-            + ", TTC: " + trajanjeOdbrane + ":" + vremePocetka + ", Ocena: " + ocena;
+                + ", TTC: " + trajanjeOdbrane + ":" + vremePocetka + ", Ocena: " + ocena;
     }
 
     public void setOcena(int ocena) {

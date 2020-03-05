@@ -16,11 +16,11 @@ public class Asistent implements Runnable {
     @Override
     public void run() {
 
-        while( true ) {
+        while (true) {
             try {
                 beginSem.acquire();
 
-                for(int i = 0; i < student.getTrajanjeOdbrane(); i++);
+                for (int i = 0; i < student.getTrajanjeOdbrane(); i++) ;
                 Random rand = new Random();
 
                 int ocena = rand.nextInt(11);
@@ -32,7 +32,8 @@ public class Asistent implements Runnable {
 
                 busy = 0;
 
-                finishedSem.release();
+                notify();
+//                finishedSem.release();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -65,8 +66,7 @@ public class Asistent implements Runnable {
     public short getBusy() {
         return busy;
     }
-
-    //    public synchronized int oceniMe(Student student) {
+//    public synchronized int oceniMe(Student student) {
 //        try {
 //            wait(student.getTrajanjeOdbrane());
 //            Random random = new Random();

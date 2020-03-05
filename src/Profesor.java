@@ -32,13 +32,10 @@ public class Profesor implements Runnable {
     public void run() {
         //noinspection TryWithIdenticalCatches
         try {
-            if( (student1 != null) && (student2 != null) ) {
+            if ((student1 != null) && (student2 != null)) {
 
                 Thread s1 = createStudentThread(student1, 0);
                 Thread s2 = createStudentThread(student2, 1);
-
-                slots[0] = 1;
-                slots[1] = 1;
 
                 s1.start();
                 s2.start();
@@ -58,11 +55,11 @@ public class Profesor implements Runnable {
         }
     }
 
-    private Thread createStudentThread(Student s, int i){
+    private Thread createStudentThread(Student s, int i) {
         return new Thread(new Runnable() {
             @Override
             public void run() {
-                for(int i = 0; i < s.getTrajanjeOdbrane(); i++) {};
+                for (int i = 0; i < s.getTrajanjeOdbrane(); i++) {};
 
                 Random rand = new Random();
                 int ocena = rand.nextInt(11);
@@ -86,20 +83,21 @@ public class Profesor implements Runnable {
         return barrier;
     }
 
-    public static Profesor getInstance(){
-        return instance == null ? instance = new Profesor(): instance;
+    public static Profesor getInstance() {
+        return instance == null ? instance = new Profesor() : instance;
     }
 
     public Semaphore getFinishedSem() {
         return finishedSem;
     }
 
-    public void setStudent(Student s){
+    public void setStudent(Student s) {
         int i = (slotCycle = (short) ((slotCycle + 1) % 2));
         slots[i] = 1;
         if (i == 0) student1 = s;
         else if (i == 1) student2 = s;
     }
+
     public short[] getSlots() {
         return slots;
     }
