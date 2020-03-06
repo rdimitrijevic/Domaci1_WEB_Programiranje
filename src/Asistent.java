@@ -15,24 +15,29 @@ public class Asistent implements Runnable {
 
     @Override
     public void run() {
-
+//        System.out.println("Pocetak asistent niti");
         while (true) {
             try {
+//                System.out.println("Cekam na singal da pocnem sa radom");
                 beginSem.acquire();
+                synchronized (this) {
 
-                for (int i = 0; i < student.getTrajanjeOdbrane(); i++) ;
-                Random rand = new Random();
+//                    System.out.println("Asistent pocinje ocenjivanje");
 
-                int ocena = rand.nextInt(11);
-                student.setOcena(ocena);
-                student.setImeIspitivaca(ime);
+                    wait(student.getTrajanjeOdbrane(), 0);
+                    Random rand = new Random();
 
-                Main.gradeSum += ocena;
-                Main.numberOfStudents++;
+                    int ocena = rand.nextInt(11);
+                    student.setOcena(ocena);
+                    student.setImeIspitivaca(ime);
 
-                busy = 0;
+                    Main.gradeSum += ocena;
+                    Main.numberOfStudents++;
 
-                notify();
+                    busy = 0;
+
+                    notify();
+                }
 //                finishedSem.release();
             } catch (InterruptedException e) {
                 e.printStackTrace();
