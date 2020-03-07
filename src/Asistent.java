@@ -8,22 +8,31 @@ public class Asistent implements Runnable {
     private ReentrantLock isReadyLock;
     private Semaphore beginSem;
 
-    private short busy = 0;
-
+    private AvgQueue queue;
     private Student student = null;
     private final String ime = "Asistent";
 
+    private boolean programEnded = false;
+
     @Override
     public void run() {
-//        System.out.println("Pocetak asistent niti");
-        while (true) {
+        Main.start.countDown();
+/*
+        synchronized (queue){
             try {
-//                System.out.println("Cekam na singal da pocnem sa radom");
+                queue.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+*/
+
+        while (true) {
+            if(programEnded) return;
+
+            try {
                 beginSem.acquire();
                 synchronized (this) {
-
-//                    System.out.println("Asistent pocinje ocenjivanje");
-
                     wait(student.getTrajanjeOdbrane(), 0);
                     Random rand = new Random();
 
@@ -31,24 +40,20 @@ public class Asistent implements Runnable {
                     student.setOcena(ocena);
                     student.setImeIspitivaca(ime);
 
-                    Main.gradeSum += ocena;
-                    Main.numberOfStudents++;
-
-                    busy = 0;
-
+                    queue.queuePut(student);
                     notify();
                 }
-//                finishedSem.release();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public Asistent() {
+    public Asistent(AvgQueue queue) {
         finishedSem = new Semaphore(0);
         beginSem = new Semaphore(0);
         isReadyLock = new ReentrantLock();
+        this.queue = queue;
     }
 
     public Semaphore getBeginSemaphore() {
@@ -64,20 +69,11 @@ public class Asistent implements Runnable {
     }
 
     public synchronized void setStudent(Student student) {
-        busy = 1;
         this.student = student;
     }
 
-    public short getBusy() {
-        return busy;
+    public void end(){
+        programEnded = true;
     }
-//    public synchronized int oceniMe(Student student) {
-//        try {
-//            wait(student.getTrajanjeOdbrane());
-//            Random random = new Random();
-//            return random.nextInt(11);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//    }
+
 }
