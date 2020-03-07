@@ -12,8 +12,8 @@ public class Student implements Runnable {
 
     private static int redniBrojNiti = 0;
 
-    private Profesor profesor;
-    private Asistent asistent;
+    private final Profesor profesor;
+    private final Asistent asistent;
 
     public Student(int vremePrispeca, int trajanjeOdbrane, Profesor profesor, Asistent asistent) {
         this.vremePrispeca = vremePrispeca;
@@ -33,40 +33,34 @@ public class Student implements Runnable {
                     vremePocetka = (int) (System.currentTimeMillis() - Main.startTime);
 
                     profesor.getBarrierReady().acquire();
-                    profesor.getBarrier().await();
 
+                    profesor.getBarrier().await();
                     profesor.getFinishedSem().acquire();
 
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    System.out.println(ime + " : trajanje odbrane kod profesora prekoracilo tajmer");
                 } catch (BrokenBarrierException e) {
                     e.printStackTrace();
                 }
 
                 return;
             } else if (asistent.getIsReadyLock().tryLock()) {
-                asistent.setStudent(this);
                 vremePocetka = (int) (System.currentTimeMillis() - Main.startTime);
+                if( vremePocetka > Main.deadline ) { asistent.getIsReadyLock().unlock(); return; };
+                asistent.setStudent(this);
 
                 asistent.getBeginSemaphore().release();
                 synchronized (asistent) {
                     try {
                         asistent.wait();
-
-/*
-
-                          Nakon sto semafor signalizira da je
-                          asistent nit zavrsila ocenjivanje
-                          student nit printuje svoje vrednosti
-*/
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        System.out.println(ime + " : trajanje odbrane kod asistenta prekoracilo tajmer");
                     } finally {
                         asistent.getIsReadyLock().unlock();
                     }
 
-                    return;
                 }
+                return;
             }
         }
     }
@@ -101,10 +95,6 @@ public class Student implements Runnable {
 
     public void setTrajanjeOdbrane(int trajanjeOdbrane) {
         this.trajanjeOdbrane = trajanjeOdbrane;
-    }
-
-    public void setProfesor(Profesor profesor) {
-        this.profesor = profesor;
     }
 
     public void setImeIspitivaca(String imeIspitivaca) {

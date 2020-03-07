@@ -17,21 +17,13 @@ public class Asistent implements Runnable {
     @Override
     public void run() {
         Main.start.countDown();
-/*
-        synchronized (queue){
-            try {
-                queue.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-*/
 
         while (true) {
-            if(programEnded) return;
 
             try {
-                beginSem.acquire();
+                if( programEnded ) { Main.endQueue.countDown(); return; }
+                if( !beginSem.tryAcquire() ) continue;
+
                 synchronized (this) {
                     wait(student.getTrajanjeOdbrane(), 0);
                     Random rand = new Random();
@@ -64,7 +56,7 @@ public class Asistent implements Runnable {
         return finishedSem;
     }
 
-    public ReentrantLock getIsReadyLock() {
+    public synchronized ReentrantLock getIsReadyLock() {
         return isReadyLock;
     }
 

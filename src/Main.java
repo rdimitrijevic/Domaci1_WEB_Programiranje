@@ -5,11 +5,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
-    public static long startTime = System.currentTimeMillis();
-    private static int deadline = 5000;
-    public static int studentNum = 30;
+    public static long startTime = -1;
+    public static int deadline = 7000;
+    public static int studentNum = 70;
 
     public static final CountDownLatch start = new CountDownLatch(3);
+    public static final CountDownLatch endQueue = new CountDownLatch(2);
+
     public static void main(String[] args) throws InterruptedException {
         AvgQueue queue = new AvgQueue(studentNum);
         Asistent asistent = new Asistent(queue);
@@ -26,6 +28,7 @@ public class Main {
 
         start.await();
 
+        startTime = System.currentTimeMillis();
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(6);
 
         Random rand = new Random();
@@ -38,28 +41,21 @@ public class Main {
             executorService.schedule(s, s.getVremePrispeca(), TimeUnit.MILLISECONDS);
         }
 
+        long remaining = 1;
+        long currentTime = 0;
+        while (remaining > 0) {
+            remaining = deadline - currentTime;
+            currentTime = System.currentTimeMillis() - startTime;
+        }
 
-        /*
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
+        asistent.end();
+        profesor.end();
 
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(500, 700, profesor, asistent),500, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(600, 400, profesor, asistent),600, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(600, 200, profesor, asistent),600, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(600, 300, profesor, asistent),600, TimeUnit.MILLISECONDS);
-        executorService.schedule(new Student(900, 480, profesor, asistent),900, TimeUnit.MILLISECONDS);
-*/
+        executorService.shutdownNow();
 
+        endQueue.await();
+
+        queue.end();
     }
 
     public static int currentTime(){

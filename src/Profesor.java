@@ -18,9 +18,10 @@ public class Profesor implements Runnable {
 
     private final String ime = "Profesor";
     private boolean first_iter = true;
+    private boolean programEnded = false;
 
     public Profesor(AvgQueue queue) {
-        barrier = new CyclicBarrier(3);
+        barrier = new CyclicBarrier(2);
         finishedSem = new Semaphore(0, true);
         barrierReady = new Semaphore(2);
 
@@ -51,7 +52,7 @@ public class Profesor implements Runnable {
                 if(!first_iter) barrierReady.release(2);
                 if(first_iter) first_iter = false;
 
-                barrier.await();
+                while( !(slots[0] && slots[1]) ) { if (programEnded) { Main.endQueue.countDown(); return; } }
 
                 if ((student1 != null) && (student2 != null)) {
 
@@ -77,14 +78,11 @@ public class Profesor implements Runnable {
                     slots[1] = false;
 
                     finishedSem.release(2);
-                    barrier.reset();
                 }
 
 
 
             } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (BrokenBarrierException e) {
                 e.printStackTrace();
             }
         }
@@ -108,6 +106,10 @@ public class Profesor implements Runnable {
 
         if (i == 0) student1 = s;
         else student2 = s;
+    }
+
+    public void end(){
+        programEnded = true;
     }
 
     /**
